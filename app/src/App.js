@@ -100,16 +100,16 @@ function App() {
     // подключился к контракту
     const contract = new web.eth.Contract(abi, "0xC5908357a54cEFD7bec7C86023396B9E53c04C6c")
     // Установил приветствие
-    /**
-    contract.methods.setGreeting("Hello from metamask 2!").send({from: acc[0]})
+    const value = prompt('Новое приветствие');
+    // Записывает в блокчейн
+    contract.methods.setGreeting(value).send({from: acc[0]})
       .on('receipt', function(){
-          console.log(0)
+        // Когда транзакция прошла получает из блокчейна
+        contract.methods.greet().call({from: acc[0]})
+        .then(function(d){
+            alert(`Новое приветствие: ${d}`);
+        });
       });
-      */
-    contract.methods.greet().send({from: acc[0]})
-    .on('receipt', function(d){
-        console.log(1, d);
-    });
   }
 
   useEffect(() => {
