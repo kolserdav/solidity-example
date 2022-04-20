@@ -6,8 +6,9 @@
   "scripts": {
     "harhat": "hardhat",
     "start": "hardhat run",
-    "compile": "hardhat compile",
-    "test": "hardhat test"
+    "compile": "hardhat compile && truffle compile",
+    "test": "hardhat test && truffle test",
+    "deploy": "truffle migrate"
   },
   "devDependencies": {
     "hardhat": "^2.9.3"
