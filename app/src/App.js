@@ -11,7 +11,7 @@ import NFT from  './artifacts/contracts/NFT.sol/NFT.json';
 const { abi } = NFT;
 let contract = {};
 const WALLET_LOCAL_STORAGE_NAME = 'wal';
-const CONTRACT = '0xB98d3E04B6A2d9C947718673999CC4Ffc9a9a495'
+const CONTRACT = '0x9c60284B64077F85176aBa192CC94807c5AcdFE5'
 
 function App() {
 

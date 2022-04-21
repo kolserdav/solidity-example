@@ -33,7 +33,6 @@ contract NFT {
     function mint(string memory _count) external payable {
         require(countTokens > 0);
         require(userCountTokens[msg.sender] < 100);
-        require(msg.value == 0.002 ether);
         bytes32 tokenId = keccak256(abi.encodePacked(_count));
         tokens[tokenId] = msg.sender;
         userCountTokens[msg.sender]++;
