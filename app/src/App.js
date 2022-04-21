@@ -3,51 +3,15 @@ import { useEffect } from 'react';
 import Web3 from "web3";
 import Web3Modal from "web3modal";
 import './App.css';
-
-const WALLET_LOCAL_STORAGE_NAME = 'wal';
+import NFT from  './artifacts/contracts/NFT.sol/NFT.json';
 
 /**
  * @type {any}
  */
-const abi =  [
-  {
-    "inputs": [
-      {
-        "internalType": "string",
-        "name": "_greeting",
-        "type": "string"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "constructor"
-  },
-  {
-    "inputs": [],
-    "name": "greet",
-    "outputs": [
-      {
-        "internalType": "string",
-        "name": "",
-        "type": "string"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "string",
-        "name": "_greeting",
-        "type": "string"
-      }
-    ],
-    "name": "setGreeting",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  }
-];
+const { abi } = NFT;
+let contract = {};
+const WALLET_LOCAL_STORAGE_NAME = 'wal';
+const CONTRACT = '0xB98d3E04B6A2d9C947718673999CC4Ffc9a9a495'
 
 function App() {
 
@@ -97,28 +61,44 @@ function App() {
     // Баланс кошелька
     console.log(web.utils.fromWei(await web.eth.getBalance(acc[0]), 'ether'));
 
-    // подключился к контракту
-    const contract = new web.eth.Contract(abi, "0xC5908357a54cEFD7bec7C86023396B9E53c04C6c")
-    // Установил приветствие
-    const value = prompt('Новое приветствие');
-    // Записывает в блокчейн
-    contract.methods.setGreeting(value).send({from: acc[0]})
-      .on('receipt', function(){
-        // Когда транзакция прошла получает из блокчейна
-        contract.methods.greet().call({from: acc[0]})
-        .then(function(d){
-            alert(`Новое приветствие: ${d}`);
+    contract = new web.eth.Contract(abi, CONTRACT)
+    if (acc[0]) {
+      const value = prompt('Контент NFT');
+      // Записывает в блокчейн
+      contract.methods.mint(value).send({from: acc[0]})
+        .on('receipt', function(){
+          // Когда транзакция прошла получает из блокчейна
+          alert('Токен создан');
         });
+    }
+  }
+
+  function getCountTokens() {
+    const acc = JSON.parse(window.localStorage.getItem(WALLET_LOCAL_STORAGE_NAME));
+    contract.methods.balanceOf().call({from: acc[0]})
+      .then(function(d){
+          alert(`Остаток токенов: ${d}`);
+      });
+  }
+
+  function getUserCountTokens() {
+    const acc = JSON.parse(window.localStorage.getItem(WALLET_LOCAL_STORAGE_NAME));
+    contract.methods.getUserCountTokens().call({from: acc[0]})
+      .then(function(d){
+          alert(`У меня токенов: ${d}`);
       });
   }
 
   useEffect(() => {
-   start();
+   console.log('startZ')
   }, []);
 
   return (
     <div className="App">
       <button onClick={connectToMetamask}>connectToMetamask</button>
+      <button onClick={start}>mint</button>
+      <button onClick={getCountTokens}>getCountTokens</button>
+      <button onClick={getUserCountTokens}>getUserCountTokens</button>
     </div>
   );
 }
