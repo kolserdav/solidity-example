@@ -11,8 +11,7 @@ contract NFT is ERC721URIStorage  {
     Counters.Counter private _tokenIds;
 
     uint32 countTokens = 1000000;
-    mapping(bytes32 => address) tokens;
-    mapping(address => uint32) userCountTokens;
+    mapping(address => uint256[]) tokens;
 
     constructor() ERC721("MyToken", "ITM") {
         console.log("Construct NFT");
@@ -20,21 +19,15 @@ contract NFT is ERC721URIStorage  {
 
     function mint(string memory _value) external payable {
         require(countTokens > 0);
-        require(userCountTokens[msg.sender] < 100);
-        userCountTokens[msg.sender]++;
         countTokens--;
          _tokenIds.increment();
-        uint256 newItemId = _tokenIds.current();
-        _mint(msg.sender, newItemId);
-        _setTokenURI(newItemId, _value);
-        transfer(address(0), msg.sender, newItemId);
+        uint256 newToken = _tokenIds.current();
+        _mint(msg.sender, newToken);
+        tokens[msg.sender].push(newToken);
+        _setTokenURI(newToken, _value);
     }
 
-    function transfer(
-        address _from,
-        address _to,
-        uint256 _token
-    ) public {
-        emit Transfer(_from, _to, _token);
+    function getUserTokens(address _owner) public view returns (uint256[] memory) {
+        return tokens[_owner];
     }
 }
