@@ -5,6 +5,7 @@ import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 
 contract NFT is ERC721URIStorage  {
     using Counters for Counters.Counter;
@@ -13,12 +14,14 @@ contract NFT is ERC721URIStorage  {
     uint32 countTokens = 1000000;
     mapping(address => uint256[]) tokens;
 
-    constructor() ERC721("MyToken", "ITM") {
+    constructor() ERC721("MyToken", "MTK") {
         console.log("Construct NFT");
     }
 
     function mint(string memory _value) external payable {
-        require(countTokens > 0);
+        require(countTokens > 0, "No more new tokens");
+        uint8 maxTokens = 100;
+        require(balanceOf(msg.sender) < maxTokens, string(abi.encodePacked("Max amount tokens is ", Strings.toString(maxTokens))));
         countTokens--;
          _tokenIds.increment();
         uint256 newToken = _tokenIds.current();

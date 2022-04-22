@@ -79,7 +79,7 @@ function App() {
       const { contract } = await getContext();
       // Подписывается на событие
       contract.once('Transfer', {}, (error, event) => {
-        console.log(parseTransaction(event.transactionHash));
+        console.log('Event transfer');
       })
       // Записывает в блокчейн
       contract.methods.mint(value).send({from: acc[0]})
@@ -88,26 +88,6 @@ function App() {
           console.log('Токен создан');
         });
     }
-  }
-
-  /**
-   * 
-   * @param {string} transaction 
-   * @returns 
-   */
-  async function parseTransaction(transaction) {
-    const { web3 } = await getContext();
-    const tx = await web3.eth.getTransactionReceipt(transaction);
-    console.log(2, tx)
-    abiDecoder.addABI(abi);
-    const decodedInput = abiDecoder.decodeMethod("0xd85d3d27000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000036461730000000000000000000000000000000000000000000000000000000000");
-    console.log(32, decodedInput);
-    return {
-        function_name: decodedInput.name,
-        from: tx.from,
-        to: decodedInput.args[0],
-        erc20Value: Number(decodedInput.args[1])
-    }; 
   }
 
   /**
