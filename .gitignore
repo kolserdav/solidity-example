@@ -10,3 +10,4 @@ artifacts
 
 #truffle
 build
+yarn-error.log
