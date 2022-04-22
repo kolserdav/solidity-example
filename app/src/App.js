@@ -85,7 +85,7 @@ function App() {
       contract.methods.mint(value).send({from: acc[0]})
         .on('receipt', function(){
           // Когда транзакция прошла получает из блокчейна
-          alert('Токен создан');
+          console.log('Токен создан');
         });
     }
   }
@@ -99,8 +99,9 @@ function App() {
     const { web3 } = await getContext();
     const tx = await web3.eth.getTransactionReceipt(transaction);
     console.log(2, tx)
-    const decodedInput = abiDecoder.decodeMethod(tx.logs);
-    console.log(decodedInput);
+    abiDecoder.addABI(abi);
+    const decodedInput = abiDecoder.decodeMethod("0xd85d3d27000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000036461730000000000000000000000000000000000000000000000000000000000");
+    console.log(32, decodedInput);
     return {
         function_name: decodedInput.name,
         from: tx.from,
@@ -112,7 +113,7 @@ function App() {
   /**
    * Получить количество токенов на кошельке
    */
-  async function getCountTokens() {
+  async function balanceOf() {
     const acc = JSON.parse(window.localStorage.getItem(WALLET_LOCAL_STORAGE_NAME));
     const { contract } =  await getContext();
     contract.methods.balanceOf(acc[0]).call({from: acc[0]})
@@ -122,14 +123,26 @@ function App() {
   }
 
   /**
+   * Получить количество оставашихся токенов на контракте
+   */
+   async function getApproved() {
+    const acc = JSON.parse(window.localStorage.getItem(WALLET_LOCAL_STORAGE_NAME));
+    const { contract } =  await getContext();
+    contract.methods.getApproved(1).call({from: acc[0]})
+      .then(function(d){
+          alert(`Осталось токенов: ${d}`);
+      });
+  }
+
+  /**
    * Получить токены пользователя
    */
    async function getUserTokens() {
     const acc = JSON.parse(window.localStorage.getItem(WALLET_LOCAL_STORAGE_NAME));
     const { contract } =  await getContext();
-    contract.methods.getUserTokens(acc[0]).call({from: acc[0]})
+    contract.methods.safeTransferFrom(acc[0], '0x4212A485A7aD43192139d054544fBC3fC806CFc1', 3).call({from: acc[0]})
       .then(function(d){
-          alert(`Мои токены: ${d}`);
+          alert(`Трансферт токенов: ${JSON.stringify(d)}`);
       });
   }
 
@@ -140,10 +153,11 @@ function App() {
 
   return (
     <div className="App">
-      <button onClick={connectToMetamask}>connectToMetamask</button>
-      <button onClick={start}>mint</button>
-      <button onClick={getCountTokens}>getCountTokens</button>
-      <button onClick={getUserTokens}>getMyTokens</button>
+      <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded m-1" onClick={connectToMetamask}>connectToMetamask</button>
+      <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded m-1" onClick={start}>mint</button>
+      <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded m-1" onClick={balanceOf}>balanceOf</button>
+      <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded m-1" onClick={getUserTokens}>getMyTokens</button>
+      <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded m-1" onClick={getApproved}>getApproved</button>
     </div>
   );
 }

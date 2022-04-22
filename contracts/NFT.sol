@@ -30,4 +30,8 @@ contract NFT is ERC721URIStorage  {
     function getUserTokens(address _owner) public view returns (uint256[] memory) {
         return tokens[_owner];
     }
+
+     function getCountTokens() public view returns (uint256) {
+        return countTokens;
+    }
 }
