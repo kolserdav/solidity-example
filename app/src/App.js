@@ -3,15 +3,41 @@ import { useEffect } from 'react';
 import Web3 from "web3";
 import Web3Modal from "web3modal";
 import './App.css';
-import NFT from  './artifacts/contracts/NFT.sol/NFT.json';
+import NFT from  './contracts/NFT.json';
 
 /**
  * @type {any}
  */
-const { abi } = NFT;
-let contract = {};
+const { abi, networks } = NFT;
+const { address } = networks["5777"];
+console.log(address)
 const WALLET_LOCAL_STORAGE_NAME = 'wal';
-const CONTRACT = '0x9c60284B64077F85176aBa192CC94807c5AcdFE5'
+
+/**
+ * 
+ * @returns {Promise<any>}
+ */
+async function getContract() {
+  const providerOptions = {
+    test: {
+     package: '',
+     options: [],
+     connector: async () => {},
+     display: {}
+    }
+   };
+   
+   const web3Modal = new Web3Modal({
+     network: "http://127.0.0.1:7545", // optional
+     cacheProvider: true, // optional
+     providerOptions
+   });
+   
+   const provider = await web3Modal.connect();
+   const web = new Web3(provider)
+
+   return new web.eth.Contract(abi, address)
+}
 
 function App() {
 
@@ -39,31 +65,10 @@ function App() {
   }
 
   async function start() {
-    const providerOptions = {
-     test: {
-      package: '',
-      options: [],
-      connector: async () => {},
-      display: {}
-     }
-    };
-    
-    const web3Modal = new Web3Modal({
-      network: "http://127.0.0.1:7545", // optional
-      cacheProvider: true, // optional
-      providerOptions
-    });
-    
-    const provider = await web3Modal.connect();
-    const web = new Web3(provider)
-
     const acc = JSON.parse(window.localStorage.getItem(WALLET_LOCAL_STORAGE_NAME));
-    // Баланс кошелька
-    console.log(web.utils.fromWei(await web.eth.getBalance(acc[0]), 'ether'));
-
-    contract = new web.eth.Contract(abi, CONTRACT)
     if (acc[0]) {
       const value = prompt('Контент NFT');
+      const contract = await getContract();
       // Записывает в блокчейн
       contract.methods.mint(value).send({from: acc[0]})
         .on('receipt', function(){
@@ -73,16 +78,18 @@ function App() {
     }
   }
 
-  function getCountTokens() {
+  async function getCountTokens() {
     const acc = JSON.parse(window.localStorage.getItem(WALLET_LOCAL_STORAGE_NAME));
+    const contract =  await getContract();
     contract.methods.balanceOf().call({from: acc[0]})
       .then(function(d){
           alert(`Остаток токенов: ${d}`);
       });
   }
 
-  function getUserCountTokens() {
+  async function getUserCountTokens() {
     const acc = JSON.parse(window.localStorage.getItem(WALLET_LOCAL_STORAGE_NAME));
+    const contract = await getContract();
     contract.methods.getUserCountTokens().call({from: acc[0]})
       .then(function(d){
           alert(`У меня токенов: ${d}`);
