@@ -78,23 +78,18 @@ function App() {
     }
   }
 
+  /**
+   * Получить количество токенов на кошельке
+   */
   async function getCountTokens() {
     const acc = JSON.parse(window.localStorage.getItem(WALLET_LOCAL_STORAGE_NAME));
     const contract =  await getContract();
-    contract.methods.balanceOf().call({from: acc[0]})
+    contract.methods.balanceOf(acc[0]).call({from: acc[0]})
       .then(function(d){
-          alert(`Остаток токенов: ${d}`);
+          alert(`Токенов: ${d}`);
       });
   }
 
-  async function getUserCountTokens() {
-    const acc = JSON.parse(window.localStorage.getItem(WALLET_LOCAL_STORAGE_NAME));
-    const contract = await getContract();
-    contract.methods.getUserCountTokens().call({from: acc[0]})
-      .then(function(d){
-          alert(`У меня токенов: ${d}`);
-      });
-  }
 
   useEffect(() => {
    console.log('startZ')
@@ -105,7 +100,6 @@ function App() {
       <button onClick={connectToMetamask}>connectToMetamask</button>
       <button onClick={start}>mint</button>
       <button onClick={getCountTokens}>getCountTokens</button>
-      <button onClick={getUserCountTokens}>getUserCountTokens</button>
     </div>
   );
 }

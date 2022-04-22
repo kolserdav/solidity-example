@@ -1,49 +1,39 @@
 //SPDX-License-Identifier: Unlicense
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.4;
 
 import "hardhat/console.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
+import "@openzeppelin/contracts/utils/Counters.sol";
 
-contract NFT {
+contract NFT is ERC721URIStorage  {
+    using Counters for Counters.Counter;
+    Counters.Counter private _tokenIds;
+
     uint32 countTokens = 1000000;
     mapping(bytes32 => address) tokens;
     mapping(address => uint32) userCountTokens;
 
-    event Transfer(
-        address indexed _from,
-        address indexed _to,
-        bytes32 indexed _tokenId
-    );
-
-    constructor() {
+    constructor() ERC721("MyToken", "ITM") {
         console.log("Construct NFT");
     }
 
-    function balanceOf() public view returns (uint32) {
-        return countTokens;
-    }
-
-    function getUserCountTokens() public view returns (uint32) {
-        return userCountTokens[msg.sender];
-    }
-
-    function ownerOf(bytes32 _tokenId) external view returns (address) {
-        return tokens[_tokenId];
-    }
-
-    function mint(string memory _count) external payable {
+    function mint(string memory _value) external payable {
         require(countTokens > 0);
         require(userCountTokens[msg.sender] < 100);
-        bytes32 tokenId = keccak256(abi.encodePacked(_count));
-        tokens[tokenId] = msg.sender;
         userCountTokens[msg.sender]++;
         countTokens--;
-        transfer(address(0), msg.sender, tokenId);
+         _tokenIds.increment();
+        uint256 newItemId = _tokenIds.current();
+        _mint(msg.sender, newItemId);
+        _setTokenURI(newItemId, _value);
+        transfer(address(0), msg.sender, newItemId);
     }
 
     function transfer(
         address _from,
         address _to,
-        bytes32 _token
+        uint256 _token
     ) public {
         emit Transfer(_from, _to, _token);
     }
