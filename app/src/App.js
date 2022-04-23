@@ -77,7 +77,7 @@ function App() {
     const acc = JSON.parse(window.localStorage.getItem(WALLET_LOCAL_STORAGE_NAME));
     if (acc[0]) {
       const value = prompt('Контент NFT');
-      const { contract } = await getContext();
+      const { contract, web3 } = await getContext();
       // Подписывается на событие
       contract.once('Transfer', {}, (error, event) => {
         if (error) {
@@ -87,7 +87,7 @@ function App() {
         console.info('Event transfer', event);
       })
       // Записывает в блокчейн
-      contract.methods.mint(value).send({from: acc[0], value: 1000000000000000})
+      contract.methods.mint(value).send({from: acc[0], value: web3.utils.toWei('0.001' ,"ether")})
         .on('receipt', function(){
           // Когда транзакция прошла получает из блокчейна
           console.info('Токен создан');
