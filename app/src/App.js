@@ -80,10 +80,14 @@ function App() {
       const { contract } = await getContext();
       // Подписывается на событие
       contract.once('Transfer', {}, (error, event) => {
-        console.info('Event transfer');
+        if (error) {
+          console.error(error);
+          return;
+        }
+        console.info('Event transfer', event);
       })
       // Записывает в блокчейн
-      contract.methods.mint(value).send({from: acc[0]})
+      contract.methods.mint(value).send({from: acc[0], value: 1000000000000000})
         .on('receipt', function(){
           // Когда транзакция прошла получает из блокчейна
           console.info('Токен создан');
@@ -105,16 +109,16 @@ function App() {
 
   /**
    * Передача токена другому кошельку
-   * TODO почему то не срабатывает но ошибки не происходит если данные верны ?
+   * TODO добавить оплату
    */
-   async function approve() {
+   async function transferFrom() {
     const acc = JSON.parse(window.localStorage.getItem(WALLET_LOCAL_STORAGE_NAME));
-    const { contract } = await getContext();
+    const { contract, web3 } = await getContext();
     contract.once('Transfer', {}, (error, event) => {
       console.info('Event transfer', error, event);
     });
-    contract.methods.transferFrom(acc[0], '0x4212A485A7aD43192139d054544fBC3fC806CFc1', 1).call({from: acc[0]})
-      .then(function(d){
+    contract.methods.transferFrom(acc[0], '0x4212A485A7aD43192139d054544fBC3fC806CFc1', 1).send({from: acc[0] })
+      .then (function(d){
           alert(`Результат: ${JSON.stringify(d)}`);
       });
   }
@@ -137,7 +141,7 @@ function App() {
       <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded m-1" onClick={mint}>mint</button>
       <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded m-1" onClick={balanceOf}>balanceOf</button>
       <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded m-1" onClick={getUserTokens}>getMyTokens</button>
-      <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded m-1" onClick={approve}>approve</button>
+      <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded m-1" onClick={transferFrom}>transferFrom</button>
     </div>
   );
 }
