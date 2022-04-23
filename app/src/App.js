@@ -1,9 +1,7 @@
 // @ts-check
-import { useEffect } from 'react';
 // eslint-disable-next-line no-unused-vars
 import Web3, { Modules } from "web3";
 import Web3Modal from "web3modal";
-import abiDecoder from 'abi-decoder';
 import './App.css';
 import NFT from  './contracts/NFT.json';
 
@@ -12,7 +10,6 @@ import NFT from  './contracts/NFT.json';
  */
 const { abi, networks } = NFT;
 const { address } = networks["5777"];
-console.log(address)
 const WALLET_LOCAL_STORAGE_NAME = 'wal';
 
 /**
@@ -49,14 +46,16 @@ async function getContext() {
 
 function App() {
 
+  /**
+   * Сохраняет кошелек
+   * @param {string[]} accounts 
+   */
   function saveAccounts(accounts){
-    // Если получены номера аккаунтов
     if (accounts?.length !== 0) {
       alert(`Wallet connected ${JSON.stringify(accounts)}`);
       window.localStorage.setItem(WALLET_LOCAL_STORAGE_NAME, JSON.stringify(accounts));
     } else {
       alert('Wallet not connected');
-      // TODO вывод что кошелек не найден
     }
   }
 
@@ -67,25 +66,27 @@ function App() {
     let accounts;
     const { ethereum } = window;
     // Если подключение к расширению браузера
-    accounts = await ethereum.request({ method: 'eth_requestAccounts' })
-    // Если получены номера аккаунтов
+    accounts = await ethereum.request({ method: 'eth_requestAccounts' });
     saveAccounts(accounts);
   }
 
-  async function start() {
+  /**
+   * Создание токена
+   */
+  async function mint() {
     const acc = JSON.parse(window.localStorage.getItem(WALLET_LOCAL_STORAGE_NAME));
     if (acc[0]) {
       const value = prompt('Контент NFT');
       const { contract } = await getContext();
       // Подписывается на событие
       contract.once('Transfer', {}, (error, event) => {
-        console.log('Event transfer');
+        console.info('Event transfer');
       })
       // Записывает в блокчейн
       contract.methods.mint(value).send({from: acc[0]})
         .on('receipt', function(){
           // Когда транзакция прошла получает из блокчейна
-          console.log('Токен создан');
+          console.info('Токен создан');
         });
     }
   }
@@ -103,14 +104,18 @@ function App() {
   }
 
   /**
-   * Получить количество оставашихся токенов на контракте
+   * Передача токена другому кошельку
+   * TODO почему то не срабатывает но ошибки не происходит если данные верны ?
    */
-   async function getApproved() {
+   async function approve() {
     const acc = JSON.parse(window.localStorage.getItem(WALLET_LOCAL_STORAGE_NAME));
-    const { contract } =  await getContext();
-    contract.methods.getApproved(1).call({from: acc[0]})
+    const { contract } = await getContext();
+    contract.once('Transfer', {}, (error, event) => {
+      console.info('Event transfer', error, event);
+    });
+    contract.methods.transferFrom(acc[0], '0x4212A485A7aD43192139d054544fBC3fC806CFc1', 1).call({from: acc[0]})
       .then(function(d){
-          alert(`Осталось токенов: ${d}`);
+          alert(`Результат: ${JSON.stringify(d)}`);
       });
   }
 
@@ -120,24 +125,19 @@ function App() {
    async function getUserTokens() {
     const acc = JSON.parse(window.localStorage.getItem(WALLET_LOCAL_STORAGE_NAME));
     const { contract } =  await getContext();
-    contract.methods.safeTransferFrom(acc[0], '0x4212A485A7aD43192139d054544fBC3fC806CFc1', 3).call({from: acc[0]})
+    contract.methods.getUserTokens(acc[0]).call({from: acc[0]})
       .then(function(d){
-          alert(`Трансферт токенов: ${JSON.stringify(d)}`);
+          alert(`Мои токены: ${JSON.stringify(d)}`);
       });
   }
-
-
-  useEffect(() => {
-   console.log('startZ')
-  }, []);
 
   return (
     <div className="App">
       <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded m-1" onClick={connectToMetamask}>connectToMetamask</button>
-      <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded m-1" onClick={start}>mint</button>
+      <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded m-1" onClick={mint}>mint</button>
       <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded m-1" onClick={balanceOf}>balanceOf</button>
       <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded m-1" onClick={getUserTokens}>getMyTokens</button>
-      <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded m-1" onClick={getApproved}>getApproved</button>
+      <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded m-1" onClick={approve}>approve</button>
     </div>
   );
 }
