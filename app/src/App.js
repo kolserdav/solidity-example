@@ -30,7 +30,7 @@ async function getContext() {
    };
    
    const web3Modal = new Web3Modal({
-     network: "http://127.0.0.1:7545", // optional
+     network: "http://127.0.0.1:8545", // optional
      cacheProvider: true, // optional
      providerOptions
    });
